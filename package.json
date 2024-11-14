@@ -14,5 +14,8 @@
   "type": "module",
   "dependencies": {
     "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0"
   }
 }
