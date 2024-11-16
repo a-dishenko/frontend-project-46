@@ -5,16 +5,28 @@ const isPathRelative = (fpath)=>{
     return true;
 };
 const getFile = (fpath) => {
-    console.log('getting some file '+fpath);
     try {
         const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(),fpath) : fpath;
         const myfile = fs.readFileSync(fullPath, 'utf8');
         return JSON.parse(myfile);
     }catch(e){
-        console.log('Cannot find the file');
+        console.log('ERROR: Cannot find the file');
     }
 };
+const printLine = (k, o, s) => {
+    return `${s} ${k}: ${o[k]}`;
+}
 const getDiff = (obj1, obj2) => {
-    return 'Some Diff...'
+    const delimeter = '\n    ';
+    const mergedObj = {...obj1, ...obj2};
+    const mergedKeys = Object.keys(mergedObj).sort();
+    const diffArr = mergedKeys.map((key)=>{
+        if(Object.hasOwn(obj1,key) && !Object.hasOwn(obj2, key)) return printLine(key, obj1, '-');
+        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) return printLine(key, obj2, '+');
+        if(obj1[key] === obj2[key]) return printLine(key, obj1, ' ')
+        return printLine(key, obj1, '-')+delimeter+printLine(key, obj2, '+');
+    });
+    const diffStr = diffArr.join(delimeter);
+    return delimeter + diffStr;
 }
 export { getFile, getDiff };
