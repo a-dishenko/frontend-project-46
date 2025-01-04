@@ -12,8 +12,9 @@ const run = () => {
     .action((first, second, options) => {
         const json1 = getFile(first);
         const json2 = getFile(second);
-        const diff = getDiff(json1,json2);
-        console.log(`\n{${diff}\n}`);
+        if(!json1 || !json2) return;
+        const diff = getDiff(json1, json2, options.format || 'default');
+        console.log(diff);
     });
     program.parse();
 };
