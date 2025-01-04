@@ -1,5 +1,5 @@
 import { program } from 'commander';
-import { getFile, getDiff } from './main,js';
+import { getFile, getDiff } from './main.js';
 
 const run = () => {
     program

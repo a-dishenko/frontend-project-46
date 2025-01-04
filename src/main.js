@@ -30,7 +30,7 @@ const getFile = (fpath) => {
         const myfile = fs.readFileSync(fullPath, 'utf8');
         return getType(fpath) === 'JSON' ? JSON.parse(myfile) : parseYaml(myfile);
     }catch(e){
-        console.log('ERROR: Cannot find the file: ', fullPath, e);
+        console.log('ERROR: File cannot be found: ', fullPath);
     }
 };
 const printLine = (k, o, s) => {
@@ -56,7 +56,7 @@ const getPlainDiff = (obj1, obj2) => {
     const diffArr = mergedKeys.map((key)=>{
         let line = `Property '${key}' was `;
         if(Object.hasOwn(obj1,key) && !Object.hasOwn(obj2, key)) line += 'removed';
-        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) line += 'added with value ' + obj2[key];
+        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) line += `added with value  '${obj2[key]}'`;
         if(obj1[key] === obj2[key]) line += 'unchanged';
         if(Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key) && (obj1[key] !== obj2[key])) line += `updated. From '${obj1[key]}' to '${obj2[key]}'`;
         return line;
