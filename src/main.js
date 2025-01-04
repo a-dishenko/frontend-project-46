@@ -54,12 +54,11 @@ const getPlainDiff = (obj1, obj2) => {
     const mergedObj = {...obj1, ...obj2};
     const mergedKeys = Object.keys(mergedObj).sort();
     const diffArr = mergedKeys.map((key)=>{
-        let line = `Property '${key}' was `;
-        if(Object.hasOwn(obj1,key) && !Object.hasOwn(obj2, key)) line += 'removed';
-        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) line += `added with value  '${obj2[key]}'`;
-        if(obj1[key] === obj2[key]) line += 'unchanged';
-        if(Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key) && (obj1[key] !== obj2[key])) line += `updated. From '${obj1[key]}' to '${obj2[key]}'`;
-        return line;
+        const start = `Property '${key}' was `;
+        if(Object.hasOwn(obj1,key) && !Object.hasOwn(obj2, key)) return start +'removed';
+        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) return start + `added with value  '${obj2[key]}'`;
+        if(obj1[key] === obj2[key]) start + 'unchanged';
+        return start + `updated. From '${obj1[key]}' to '${obj2[key]}'`;
     });
     return diffArr.join('\n');
 };
