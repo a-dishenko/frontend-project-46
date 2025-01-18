@@ -1,3 +1,4 @@
+/*global console*/
 import { program } from 'commander';
 import { getFile, getDiff } from './main.js';
 

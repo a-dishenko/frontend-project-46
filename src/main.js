@@ -1,3 +1,4 @@
+/*global console, process*/
 import fs from 'fs';
 import * as path from 'path';
 const isPathRelative = (fpath)=>{
@@ -31,6 +32,7 @@ const getFile = (fpath) => {
         return getType(fpath) === 'JSON' ? JSON.parse(myfile) : parseYaml(myfile);
     }catch(e){
         console.log('ERROR: File cannot be found: ', fullPath);
+        console.log(e);
     }
 };
 const printLine = (k, o, s) => {
