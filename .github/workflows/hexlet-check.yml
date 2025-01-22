@@ -26,4 +26,14 @@ jobs:
           cache: 'npm'          
       - run: make install
       - run: make lint
-      - run: make test          
+      - run: make test
+      - name: Test & publish code coverage
+      # Publish code coverage on Code Climate
+      # https://github.com/paambaati/codeclimate-action
+        uses: paambaati/codeclimate-action@v5.0.0
+      # Add Code Climate secret key
+        env:
+          CC_TEST_REPORTER_ID: d791a9e578044347f33c82c00fc18b1587f0fcf048b3999cdea2f23edfe57390
+        with:
+          coverageCommand: make test-coverage
+          debug: true
