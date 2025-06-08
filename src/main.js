@@ -135,7 +135,7 @@ function formatDiff(diff, depth = 1) {
     }
   });
 
-  return depth == 1 ? `{\n${lines.join('\n')}/n}` : lines.join('\n'); // добавляем начальне скобки только на 1м уровне
+  return depth == 1 ? `{\n${lines.join('\n')}\n}` : lines.join('\n'); // добавляем начальне скобки только на 1м уровне
 }
 
 
@@ -146,6 +146,10 @@ function formatDiff(diff, depth = 1) {
  * @returns {string} Форматированная строка.
  */
 function formatValue(value, depth) {
+  if (typeof value === 'string') {
+    return `"${value}"`; // обернуть строку в кавычки
+  }
+
   if (!isObject(value)) {
     return String(value);
   }
@@ -154,11 +158,11 @@ function formatValue(value, depth) {
   const currentIndent = ' '.repeat((depth + 1) * indentSize);
   const closingIndent = ' '.repeat(depth * indentSize);
 
-  const entries = Object.entries(value).map(
+  const lines = Object.entries(value).map(
     ([key, val]) => `${currentIndent}${key}: ${formatValue(val, depth + 1)}`
   );
 
-  return `{\n${entries.join('\n')}\n${closingIndent}}`;
+  return `{\n${lines.join('\n')}\n${closingIndent}}`;
 }
 
 /**
