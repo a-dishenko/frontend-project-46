@@ -75,23 +75,15 @@ const getFile = (fpath) => {
 };
 
 const getDiff = (obj1, obj2, format) => {
-    if (format === 'plain') return getPlainDiff(obj1, obj2);
-    return formatDiff(calcDiff(obj1, obj2))
-};
+    const diff = calcDiff(obj1, obj2);
+    if (format === 'plain') {
+      return formatPlainDiff(diff);
+    }
+    return formatDiff(diff);
+  };
 
 
-const getPlainDiff = (obj1, obj2) => {
-    const mergedObj = {...obj1, ...obj2};
-    const mergedKeys = Object.keys(mergedObj).sort();
-    const diffArr = mergedKeys.map((key)=>{
-        const start = `Property '${key}' was `;
-        if(Object.hasOwn(obj1,key) && !Object.hasOwn(obj2, key)) return start +'removed';
-        if(!Object.hasOwn(obj1,key) && Object.hasOwn(obj2, key)) return start + `added with value  '${obj2[key]}'`;
-        if(obj1[key] === obj2[key]) start + 'unchanged';
-        return start + `updated. From '${obj1[key]}' to '${obj2[key]}'`;
-    });
-    return diffArr.join('\n');
-};
+
 
 /**
  * Строит древовидное представление различий между двумя объектами.
@@ -136,6 +128,41 @@ const calcDiff = (obj1, obj2) => {
     return { key, type: 'unchanged', value: val1 };
   });
 }
+
+
+const formatValueForPlain = (value) => {
+    if (typeof value === 'string') {
+      return `'${value}'`;
+    }
+    if (typeof value === 'boolean' || typeof value === 'number') {
+      return String(value);
+    }
+    if (Array.isArray(value) || typeof value === 'object' && value !== null) {
+      return '[complex value]';
+    }
+    return String(value);
+  };
+  
+  const formatPlainDiff = (diff, path = '') => {
+    return diff.map(node => {
+      const currentPath = path ? `${path}.${node.key}` : node.key;
+  
+      switch (node.type) {
+        case 'added':
+          return `Property '${currentPath}' was added with value: ${formatValueForPlain(node.value)}`;
+        case 'removed':
+          return `Property '${currentPath}' was removed`;
+        case 'unchanged':
+          return ''; // Если свойство не изменилось, не добавляем строку
+        case 'changed':
+          return `Property '${currentPath}' was updated. From ${formatValueForPlain(node.oldValue)} to ${formatValueForPlain(node.newValue)}`;
+        case 'nested':
+          return formatPlainDiff(node.children, currentPath);
+        default:
+          throw new Error(`Unknown node type: ${node.type}`);
+      }
+    }).filter(line => line !== '').join('\n'); // Фильтруем пустые строки и объединяем в одну строку
+  };
 
 /**
  * Форматирует различия в читаемую строку.
