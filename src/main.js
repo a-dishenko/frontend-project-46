@@ -1,96 +1,27 @@
 /*global console, process*/
 import fs from 'fs';
 import * as path from 'path';
-const isPathRelative = (fpath)=>{
-    if (fpath[0] === '/' || fpath[1] === ':') return false;
-    return true;
-};
-const getType = (fpath) => {
-    const ext = fpath.split('.').slice(-1)[0];
-    if (ext === 'json') return 'JSON';
-    if (ext === 'yml') return 'YAML';
-    return null;
-};
-/**
- * Простейший YAML-парсер без внешних библиотек.
- * Поддерживает:
- * - примитивы: строки, числа, true/false, null
- * - вложенные объекты и списки
- */
-export const parseYaml = (ymlText) => {
-  const lines = ymlText.split('\n');
-  const result = {};
-  const stack = [{ indent: -1, obj: result }];
+import getParser from './parsers/index.js';
+import getFormatter from './formatters/index.js';
 
-  for (const rawLine of lines) {
-    const line = rawLine.trimEnd();
-    if (line === '' || line.trimStart().startsWith('#')) continue;
-
-    const indent = rawLine.match(/^ */)[0].length;
-    const parent = [...stack].reverse().find(item => item.indent < indent).obj;
-
-    if (line.trimStart().startsWith('- ')) {
-      const value = parseYamlValue(line.trimStart().slice(2).trim());
-      const lastKey = Object.keys(parent).at(-1);
-      if (!Array.isArray(parent[lastKey])) {
-        parent[lastKey] = [];
-      }
-      parent[lastKey].push(value);
-      continue;
-    }
-
-    const [keyPart, ...valueParts] = line.split(':');
-    const key = keyPart.trim();
-    const valueRaw = valueParts.join(':').trim();
-
-    if (valueRaw === '') {
-      const newObj = {};
-      parent[key] = newObj;
-      stack.push({ indent, obj: newObj });
-    } else {
-      parent[key] = parseYamlValue(valueRaw);
-    }
-  }
-
-  return result;
-};
-
-const parseYamlValue = (value) => {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (value === 'null') return null;
-  if (!isNaN(value)) return Number(value);
-  return value;
+const isPathRelative = (fpath) => {
+  if (fpath[0] === '/' || fpath[1] === ':') return false;
+  return true;
 };
 
 const getFile = (fpath) => {
-    const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(),fpath) : fpath;
+    const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(), fpath) : fpath;
     try {
-        const myfile = fs.readFileSync(fullPath, 'utf8');
-        return getType(fpath) === 'JSON' ? JSON.parse(myfile) : parseYaml(myfile);
-    }catch(e){
-        console.log('ERROR: File cannot be found: ', fullPath);
-        console.log(e);
+      const myfile = fs.readFileSync(fullPath, 'utf8');
+      const ext = path.extname(fpath).slice(1).toLowerCase();
+      const parser = getParser(ext);
+      return parser(myfile);
+    } catch (e) {
+      console.log('ERROR: File cannot be found: ', fullPath);
+      console.log(e);
     }
-};
-
-const getDiff = (obj1, obj2, format) => {
-    const diff = calcDiff(obj1, obj2);
-    if (format === 'plain') {
-      return formatPlainDiff(diff);
-    }
-    return formatDiff(diff);
   };
 
-
-
-
-/**
- * Строит древовидное представление различий между двумя объектами.
- * @param {Object} obj1 - Первый объект.
- * @param {Object} obj2 - Второй объект.
- * @returns {Array} Массив различий в виде объектов с типом и значениями.
- */
 const calcDiff = (obj1, obj2) => {
   const keys = Array.from(new Set([...Object.keys(obj1), ...Object.keys(obj2)]))
     .sort();
@@ -127,114 +58,16 @@ const calcDiff = (obj1, obj2) => {
 
     return { key, type: 'unchanged', value: val1 };
   });
-}
+};
 
-
-const formatValueForPlain = (value) => {
-    if (typeof value === 'string') {
-      return `'${value}'`;
-    }
-    if (typeof value === 'boolean' || typeof value === 'number') {
-      return String(value);
-    }
-    if (Array.isArray(value) || typeof value === 'object' && value !== null) {
-      return '[complex value]';
-    }
-    return String(value);
-  };
-  
-  const formatPlainDiff = (diff, path = '') => {
-    return diff.map(node => {
-      const currentPath = path ? `${path}.${node.key}` : node.key;
-  
-      switch (node.type) {
-        case 'added':
-          return `Property '${currentPath}' was added with value: ${formatValueForPlain(node.value)}`;
-        case 'removed':
-          return `Property '${currentPath}' was removed`;
-        case 'unchanged':
-          return ''; // Если свойство не изменилось, не добавляем строку
-        case 'changed':
-          return `Property '${currentPath}' was updated. From ${formatValueForPlain(node.oldValue)} to ${formatValueForPlain(node.newValue)}`;
-        case 'nested':
-          return formatPlainDiff(node.children, currentPath);
-        default:
-          throw new Error(`Unknown node type: ${node.type}`);
-      }
-    }).filter(line => line !== '').join('\n'); // Фильтруем пустые строки и объединяем в одну строку
-  };
-
-/**
- * Форматирует различия в читаемую строку.
- * @param {Array} diff - Результат работы calcDiff.
- * @param {number} depth - Текущая глубина вложенности.
- * @returns {string} Строка форматированного диффа.
- */
-const formatDiff = (diff, depth = 1) => {
-  const indentSize = 4;
-  const currentIndent = ' '.repeat(depth * indentSize);
-  const signIndent = ' '.repeat((depth * indentSize) - 2);
-
-  const lines = diff.flatMap((node) => {
-    const key = node.key;
-
-    switch (node.type) {
-      case 'added':
-        return `${signIndent}+ ${key}: ${formatValue(node.value, depth)}`;
-      case 'removed':
-        return `${signIndent}- ${key}: ${formatValue(node.value, depth)}`;
-      case 'unchanged':
-        return `${signIndent}  ${key}: ${formatValue(node.value, depth)}`;
-      case 'changed':
-        return [
-          `${signIndent}- ${key}: ${formatValue(node.oldValue, depth)}`,
-          `${signIndent}+ ${key}: ${formatValue(node.newValue, depth)}`,
-        ];
-      case 'nested':
-        return `${signIndent}  ${key}: {\n${formatDiff(node.children, depth + 1)}\n${currentIndent}}`;
-      default:
-        throw new Error(`Unknown node type: ${node.type}`);
-    }
-  });
-
-  return depth == 1 ? `{\n${lines.join('\n')}\n}` : lines.join('\n'); // добавляем начальне скобки только на 1м уровне
-}
-
-
-/**
- * Форматирует значение в виде строки с учётом вложенности.
- * @param {any} value - Значение.
- * @param {number} depth - Текущая глубина вложенности.
- * @returns {string} Форматированная строка.
- */
-function formatValue(value, depth) {
-  if (typeof value === 'string') {
-    return `"${value}"`; // обернуть строку в кавычки
-  }
-
-  if (!isObject(value)) {
-    return String(value);
-  }
-
-  const indentSize = 4;
-  const currentIndent = ' '.repeat((depth + 1) * indentSize);
-  const closingIndent = ' '.repeat(depth * indentSize);
-
-  const lines = Object.entries(value).map(
-    ([key, val]) => `${currentIndent}${key}: ${formatValue(val, depth + 1)}`
-  );
-
-  return `{\n${lines.join('\n')}\n${closingIndent}}`;
-}
-
-/**
- * Проверяет, является ли значение объектом (и не массивом).
- * @param {any} value - Проверяемое значение.
- * @returns {boolean} Результат проверки.
- */
-function isObject(value) {
+const isObject = (value) => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+};
 
+const getDiff = (obj1, obj2, format = 'stylish') => {
+    const diff = calcDiff(obj1, obj2);
+    const formatter = getFormatter(format);
+    return formatter(diff);
+  };
 
-export { getFile, getDiff, getType };
+export { getFile, calcDiff, isObject, getDiff};

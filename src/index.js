@@ -3,7 +3,7 @@ import { program } from 'commander';
 import { getFile, getDiff } from './main.js';
 
 const run = () => {
-    program
+  program
     .name('gendiff')
     .description('Compares two configuration files and shows a difference.')
     .version('1.0.0');
@@ -11,12 +11,12 @@ const run = () => {
     program.option('-f, --format [type]', 'output format')
     .argument('<filepath1>').argument('<filepath2>')
     .action((first, second, options) => {
-        const json1 = getFile(first);
-        const json2 = getFile(second);
-        if(!json1 || !json2) return;
-        const diff = getDiff(json1, json2, options.format || 'default');
-        console.log(diff);
+      const json1 = getFile(first);
+      const json2 = getFile(second);
+      if (!json1 || !json2) return;
+      const diff = getDiff(json1, json2, options.format || 'stylish');
+      console.log(diff);
     });
-    program.parse();
+  program.parse();
 };
 export default run;
