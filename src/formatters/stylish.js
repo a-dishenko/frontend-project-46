@@ -1,8 +1,5 @@
 // formatters/stylish.js
 const formatValue = (value, depth) => {
-    if (typeof value === 'string') {
-      return `"${value}"`; // обернуть строку в кавычки
-    }
   
     if (!isObject(value)) {
       return String(value);
