@@ -11,6 +11,7 @@
       }
     },
     "group1": {
+      "default": null,
       "baz": "bas",
       "foo": "bar",
       "nest": {
@@ -22,5 +23,6 @@
       "deep": {
         "id": 45
       }
-    }
+    },
+    "language": "js"    
   }

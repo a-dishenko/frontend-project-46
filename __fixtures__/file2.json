@@ -16,6 +16,7 @@
       }
     },
     "group1": {
+      "default": "",
       "foo": "bar",
       "baz": "bars",
       "nest": "str"
@@ -27,5 +28,6 @@
         }
       },
       "fee": 100500
-    }
+    },
+    "language": "js"
   }
