@@ -10,17 +10,19 @@ const isPathRelative = (fpath) => {
 };
 
 const getFile = (fpath) => {
-    const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(), fpath) : fpath;
-    try {
-      const myfile = fs.readFileSync(fullPath, 'utf8');
-      const ext = path.extname(fpath).slice(1).toLowerCase();
-      const parser = getParser(ext);
-      return parser(myfile);
-    } catch (e) {
-      console.log('ERROR: File cannot be found: ', fullPath);
-      console.log(e);
-    }
-  };
+  const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(), fpath) : fpath;
+  console.log('Reading file at:', fullPath); // <--- диагностика
+  try {
+    const myfile = fs.readFileSync(fullPath, 'utf8');
+    const ext = path.extname(fpath).slice(1).toLowerCase();
+    const parser = getParser(ext);
+    return parser(myfile);
+  } catch (e) {
+    console.error('ERROR: File cannot be found or parsed:', fullPath);
+    console.error(e);
+  }
+};
+
 
 const calcDiff = (obj1, obj2) => {
   const keys = Array.from(new Set([...Object.keys(obj1), ...Object.keys(obj2)]))
