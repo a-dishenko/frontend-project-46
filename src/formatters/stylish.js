@@ -16,23 +16,16 @@ const formatValue = (value, depth) => {
     return 'null';
   }
 
-  if (typeof value === 'boolean') {
+  if (typeof value === 'boolean' || typeof value === 'number') {
     return value.toString();
   }
 
-  if (typeof value === 'number') {
-    return value.toString();
-  }
-
-  // Для строк — возвращаем как есть, без кавычек
   if (typeof value === 'string') {
-    return value;
+    return value; // без кавычек!
   }
 
   return String(value);
 };
-
-
 
 const isObject = (value) => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
