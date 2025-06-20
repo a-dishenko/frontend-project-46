@@ -1,20 +1,36 @@
 // formatters/stylish.js
 const formatValue = (value, depth) => {
-  
-    if (!isObject(value)) {
-      return String(value);
-    }
-  
+  if (typeof value === 'string') {
+    return `"${value}"`; // Добавляем кавычки вокруг строки
+  }
+
+  if (value === null) {
+    return 'null';
+  }
+
+  if (typeof value === 'boolean') {
+    return value.toString();
+  }
+
+  if (typeof value === 'number') {
+    return value.toString();
+  }
+
+  if (isObject(value)) {
     const indentSize = 4;
     const currentIndent = ' '.repeat((depth + 1) * indentSize);
     const closingIndent = ' '.repeat(depth * indentSize);
-  
+
     const lines = Object.entries(value).map(
       ([key, val]) => `${currentIndent}${key}: ${formatValue(val, depth + 1)}`
     );
-  
+
     return `{\n${lines.join('\n')}\n${closingIndent}}`;
-  };
+  }
+
+  return String(value);
+};
+
   
   const isObject = (value) => {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
