@@ -2,7 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "Object comparator",
-  "main": "index.js",
+  "exports": "./src/index.js",
   "bin": {
     "gendiff": "bin/gendiff.js"
   },

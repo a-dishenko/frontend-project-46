@@ -11,7 +11,7 @@ const isPathRelative = (fpath) => {
 
 const getFile = (fpath) => {
   const fullPath = isPathRelative(fpath) ? path.resolve(process.cwd(), fpath) : fpath;
-  console.log('Reading file at:', fullPath); // <--- диагностика
+  //console.log('Reading file at:', fullPath); // <--- диагностика
   try {
     const myfile = fs.readFileSync(fullPath, 'utf8');
     const ext = path.extname(fpath).slice(1).toLowerCase();
