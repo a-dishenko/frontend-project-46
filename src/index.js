@@ -1,27 +1,14 @@
-/*global console*/
-import { program } from 'commander';
 import { getFile, getDiff } from './main.js';
 
-const run = () => {
-  program
-    .name('gendiff')
-    .description('Compares two configuration files and shows a difference.')
-    .version('1.0.0');
+const genDiff = (filepath1, filepath2, format = 'stylish') => {
+  const json1 = getFile(filepath1);
+  const json2 = getFile(filepath2);
 
-    program.option('-f, --format [type]', 'output format')
-    .argument('<filepath1>').argument('<filepath2>')
-    .action((first, second, options) => {
-      const json1 = getFile(first);
-      const json2 = getFile(second);
-      
-      if (!json1 || !json2) return;
-      
-      console.log('== json1 ==', JSON.stringify(json1, null, 2));
-      console.log('== json2 ==', JSON.stringify(json2, null, 2));
+  if (!json1 || !json2) {
+    throw new Error('One or both files could not be read');
+  }
 
-      const diff = getDiff(json1, json2, options.format || 'stylish');
-      console.log(diff);
-    });
-  program.parse();
+  return getDiff(json1, json2, format);
 };
-export default run;
+
+export default genDiff;

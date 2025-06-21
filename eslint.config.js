@@ -9,6 +9,9 @@ export default [
     languageOptions: { 
       globals: pluginJest.environments.globals.globals 
     },
+    env: {
+      node: true, // ✅ добавлено
+    },    
     plugins: { jest: pluginJest },
     rules: {
       'jest/no-disabled-tests': 'warn',
