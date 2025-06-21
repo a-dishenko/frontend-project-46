@@ -13,7 +13,12 @@ const run = () => {
     .action((first, second, options) => {
       const json1 = getFile(first);
       const json2 = getFile(second);
+      
       if (!json1 || !json2) return;
+      
+      console.log('== json1 ==', JSON.stringify(json1, null, 2));
+      console.log('== json2 ==', JSON.stringify(json2, null, 2));
+
       const diff = getDiff(json1, json2, options.format || 'stylish');
       console.log(diff);
     });
